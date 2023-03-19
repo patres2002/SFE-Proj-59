@@ -1,5 +1,5 @@
 @import url("https://fonts.googleapis.com/css?family=Lato:400,700");
-#bg {
+.bg {
   background-image: url('https://i.ytimg.com/vi/RJIABsgnTHk/maxresdefault.jpg');
   position: absolute;
   left: 0;

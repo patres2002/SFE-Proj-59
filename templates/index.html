@@ -1,0 +1,26 @@
+{% extends 'base.html' %}
+
+{% block head %}
+<link rel="stylesheet" href="{{ url_for('static', filename='css/login.css') }}">
+<title>Login - StuCare</title>
+{% endblock %}
+
+{% block body %}
+
+<div class="bg"></div>
+
+<form name="f1" action="authentication.php" onsubmit="return validation()" method="POST">
+
+  <div class="form-field">
+    <input type="username" id="user" placeholder="Username" required/>
+  </div>
+  
+  <div class="form-field">
+    <input type="password" id="pass" placeholder="Password" required/>                         
+  </div>
+  
+  <div class="form-field">
+    <button class="btn" type="submit">Log in</button>
+  </div>
+</form>
+{% endblock %}
