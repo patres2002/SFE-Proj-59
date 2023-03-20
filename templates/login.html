@@ -7,16 +7,17 @@
 
 {% block body %}
 
-<div class="bg"></div>
+<div class="bg">
+</div>
 
-<form name="f1" action="authentication.php" onsubmit="return validation()" method="POST">
+<form name="f1" action="" method="POST">
 
   <div class="form-field">
-    <input type="username" id="user" placeholder="Username" required/>
+    <input class="input" id="username" type="text" name="username" placeholder="Username" required/>
   </div>
   
   <div class="form-field">
-    <input type="password" id="pass" placeholder="Password" required/>                         
+    <input class="input" type="password" id="password" name="password" placeholder="Password" required/>                         
   </div>
   
   <div class="form-field">

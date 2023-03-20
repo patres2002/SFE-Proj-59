@@ -6,14 +6,14 @@
 {% endblock %}
 
 {% block body %}
-    <body cls="loggedin"as>
-        <nav class="navtop">
-			<div>
-				<h1>StuCare</h1>
-				<a href="profile.php"><i class="user-cirlce"></i>Profile</a>
-				<a href="logout.php"><i class="sign-out-icon"></i>Logout</a>
-                <a href=""><i class=></i>Extenuating Circumstance</a>
-                <a href=""><i class=></i>Request</a>
-			</div>
-		</nav>
+<nav class="navtop">
+    <div>
+        <h1>StuCare</h1>
+        <a href=""><i class="user-cirlce"></i>Profile</a>
+        <a href="{{ url_for('logout') }}"><i class="sign-out-icon"></i>Logout</a>
+        <a href=""><i class=></i>Extenuating Circumstance</a>
+        <a href=""><i class=></i>Request</a>
+    </div>
+</nav>
+<p>You are logged in as {{ username }}</p>
 {% endblock %}
