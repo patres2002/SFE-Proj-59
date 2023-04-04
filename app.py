@@ -6,15 +6,32 @@ app = Flask(__name__)
 app.secret_key = 'group59'
 
 # Connect to the database
-conn = sqlite3.connect('users.db')
+conn = sqlite3.connect('system.db')
 c = conn.cursor()
 
-# Create the table if it doesn't exist
+# Create the users table if it doesn't exist
 c.execute('''CREATE TABLE IF NOT EXISTS users (username text, password text)''')
 
-# Insert example data
-c.execute("INSERT INTO users VALUES ('admin', 'admin')")
-c.execute("INSERT INTO users VALUES ('student', 'student')")
+
+# Check if the table is empty
+c.execute("SELECT COUNT(*) FROM users")
+row_count = c.fetchone()[0]
+
+# Insert example data only if the table is empty
+if row_count == 0:
+    c.execute("INSERT INTO users VALUES ('admin', 'admin')")
+    c.execute("INSERT INTO users VALUES ('student', 'student')")
+    conn.commit()
+
+# Create the tickets table for issues
+c.execute('''CREATE TABLE IF NOT EXISTS tickets (
+    id INTEGER PRIMARY KEY,
+    user_id INTEGER,
+    title TEXT NOT NULL,
+    description TEXT,
+    status TEXT NOT NULL,
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP)''')
 
 # Save the changes and close the database
 conn.commit()
@@ -28,7 +45,7 @@ def login():
     if request.method == 'POST':
         # print("about to post")
         # Connect to the database
-        conn = sqlite3.connect('users.db')
+        conn = sqlite3.connect('system.db')
         # print("connected")
         c = conn.cursor()
 
