@@ -77,6 +77,20 @@ def home():
         return render_template('home.html', username = session['username'])
     return redirect(url_for('login'))
 
+# EC page
+@app.route('/ec')
+def ec():
+    if 'username' in session:
+        return render_template('ec.html', username = session['username'])
+    return redirect(url_for('login'))
+
+# Issues page
+@app.route('/issues')
+def issues():
+    if 'username' in session:
+        return render_template('issues.html', username = session['username'])
+    return redirect(url_for('login'))
+
 # Logout page
 @app.route('/logout')
 def logout():

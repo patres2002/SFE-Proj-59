@@ -7,6 +7,16 @@
     {% block head %}{% endblock %}
 </head>
 <body>
+    <nav class="navtop">
+        <div>
+            <h1>StuCare</h1>
+            <a href=""><i class="user-cirlce"></i>Profile</a>
+            <a href="{{ url_for('logout') }}"><i class="sign-out-icon"></i>Logout</a>
+            <a href="{{ url_for('ec') }}"><i class=></i>Extenuating Circumstance</a>
+            <a href=""><i class=></i>Request</a>
+            <a href="{{ url_for('issues') }}">Issues</a>
+        </div>
+    </nav>
     {% block body %}{% endblock %}
 </body>
 </html>
