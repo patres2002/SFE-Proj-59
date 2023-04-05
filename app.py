@@ -133,22 +133,16 @@ def issues():
 
         if request.method == 'POST':
             # Get the form data
-            print("here")
             title = request.form['title']
-            print(title)
             description = request.form['description']
-            print(description)
             user_id = session['user_id']
-            print(user_id)
             status = 'pending'
 
             try:
                 # Send the data to the database
-                print("starting")
                 c.execute("INSERT INTO tickets (user_id, title, description, status) VALUES (?, ?, ?, ?)",(user_id, title, description, status))
                 conn.commit()
                 message = "Your issue has been submitted."
-                print("returning")
                 return render_template('message.html', message=message)
             except Exception as e:
                 conn.rollback()
@@ -156,14 +150,14 @@ def issues():
         # if admin return all the tickets in the database
         elif session['username'] == 'admin':
             try:
-                c.execute("SELECT * FROM tickets")
+                c.execute("SELECT users.username, tickets.title, tickets.description, tickets.status, tickets.created_at FROM tickets INNER JOIN users ON users.id = user_id")
                 issues = c.fetchall()
                 conn.close
                 return render_template('issues.html', username=session['username'], issues=issues)
             except Exception as e:
                 # Handle errors
                 conn.rollback()
-                return render_template('error.html', message="An error occurred while accessing the database.")
+                return render_template('error.html', message=e)
         else:
             return render_template('issues.html', username=session['username'])
     return redirect(url_for('login'))

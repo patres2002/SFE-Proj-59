@@ -25,17 +25,21 @@
     <table>
       <thead>
         <tr>
+          <th>Name</th>
           <th>Title</th>
           <th>Description</th>
-          <th>User</th>
+          <th>Status</th>
+          <th>Created</th>
         </tr>
       </thead>
       <tbody>
         {% for issue in issues %}
           <tr>
+            <td>{{ issue[0] }}</td>
             <td>{{ issue[1] }}</td>
             <td>{{ issue[2] }}</td>
             <td>{{ issue[3] }}</td>
+            <td>{{ issue[4] }}</td>
           </tr>
         {% endfor %}
       </tbody>
