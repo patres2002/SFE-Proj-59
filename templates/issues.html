@@ -5,6 +5,40 @@
 <title>Issues - StuCare</title>
 {% endblock %}
 
+
 {% block body %}
-<p>Creating issue as {{ username }}</p>
+  <h1>Submit an Issue</h1>
+  <form method="POST" action="{{ url_for('issues') }}">
+    <div>
+      <label for="title">Title</label>
+      <input type="text" id="title" name="title" required>
+    </div>
+    <div>
+      <label for="description">Description</label>
+      <textarea id="description" name="description" required></textarea>
+    </div>
+    <button type="submit">Submit</button>
+  </form>
+
+  {% if issues|default %}
+    <h1>Issues</h1>
+    <table>
+      <thead>
+        <tr>
+          <th>Title</th>
+          <th>Description</th>
+          <th>User</th>
+        </tr>
+      </thead>
+      <tbody>
+        {% for issue in issues %}
+          <tr>
+            <td>{{ issue[1] }}</td>
+            <td>{{ issue[2] }}</td>
+            <td>{{ issue[3] }}</td>
+          </tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  {% endif %}
 {% endblock %}

@@ -12,7 +12,6 @@ c = conn.cursor()
 # Create the users table if it doesn't exist
 c.execute('''CREATE TABLE IF NOT EXISTS users (id INTEGER PRIMARY KEY, username TEXT, password TEXT)''')
 
-
 # Check if the table is empty
 c.execute("SELECT COUNT(*) FROM users")
 row_count = c.fetchone()[0]
@@ -72,6 +71,7 @@ def login() -> str:
             if data is not None:
                 session['username'] = request.form['username']
                 # Store the user ID in the session
+                print(data)
                 session['user_id'] = data[0]
                 return redirect(url_for('home'))
 
@@ -124,10 +124,48 @@ def ec() -> str:
     return redirect(url_for('login'))
 
 # Issues page
-@app.route('/issues')
+@app.route('/issues', methods=['GET', 'POST'])
 def issues():
     if 'username' in session:
-        return render_template('issues.html', username = session['username'])
+        # Connect to the database
+        conn = sqlite3.connect('system.db')
+        c = conn.cursor()
+
+        if request.method == 'POST':
+            # Get the form data
+            print("here")
+            title = request.form['title']
+            print(title)
+            description = request.form['description']
+            print(description)
+            user_id = session['user_id']
+            print(user_id)
+            status = 'pending'
+
+            try:
+                # Send the data to the database
+                print("starting")
+                c.execute("INSERT INTO tickets (user_id, title, description, status) VALUES (?, ?, ?, ?)",(user_id, title, description, status))
+                conn.commit()
+                message = "Your issue has been submitted."
+                print("returning")
+                return render_template('message.html', message=message)
+            except Exception as e:
+                conn.rollback()
+                return render_template('error.html', message=e)
+        # if admin return all the tickets in the database
+        elif session['username'] == 'admin':
+            try:
+                c.execute("SELECT * FROM tickets")
+                issues = c.fetchall()
+                conn.close
+                return render_template('issues.html', username=session['username'], issues=issues)
+            except Exception as e:
+                # Handle errors
+                conn.rollback()
+                return render_template('error.html', message="An error occurred while accessing the database.")
+        else:
+            return render_template('issues.html', username=session['username'])
     return redirect(url_for('login'))
 
 # Logout page
