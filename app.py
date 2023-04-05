@@ -55,7 +55,7 @@ def login() -> str:
         return redirect(url_for('home'))
 
     if request.method == 'POST':
-        # try:
+        try:
             # Connect to the database
             conn = sqlite3.connect('system.db')
             c = conn.cursor()
@@ -77,9 +77,9 @@ def login() -> str:
 
             # Close the database
             conn.close()
-        # except Exception as e:
-        #     # Handle errors
-        #     return render_template('error.html', message="An error occurred while accessing the database.")
+        except Exception as e:
+            # Handle errors
+            return render_template('error.html', message="An error occurred while accessing the database.")
 
     # If the details are incorrect, show the login page
     return render_template('login.html')
