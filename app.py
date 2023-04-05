@@ -97,17 +97,27 @@ def home() -> str:
 
 # EC page
 @app.route('/ec', methods=['GET', 'POST'])
-def ec():
+def ec() -> str:
     if request.method == 'POST':
-        # print("about to post")
-        # Connect to the database
-        conn = sqlite3.connect('system.db')
-        # print("connected")
-        c = conn.cursor()
-        c.execute("INSERT INTO ecs (user_id, title, description, status) VALUES (?, ?, ?, ?)", ())
-        data = c.fetchone()
-        # Close the database
-        conn.close()
+        try:
+            # Connect to the database
+            conn = sqlite3.connect('system.db')
+            c = conn.cursor()
+
+            # Get the details from the form and insert into the database
+            title = request.form['title']
+            description = request.form['description']
+            status = 'pending'
+            user_id = session['user_id']
+            c.execute("INSERT INTO ecs (user_id, title, description, status) VALUES (?, ?, ?, ?)",
+                      (user_id, title, description, status))
+            conn.commit()
+
+            # Close the database
+            conn.close()
+        except Exception as e:
+            # Handle errors
+            return render_template('error.html', message="An error occurred while accessing the database.")
 
     if 'username' in session:
         return render_template('ec.html', username = session['username'])
@@ -125,6 +135,7 @@ def issues():
 def logout():
     # remove the username from the session if it is there
     session.pop('username', None)
+    session.pop('user_id', None)
     return redirect(url_for('login'))
 
 
