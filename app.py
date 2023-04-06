@@ -20,6 +20,11 @@ row_count = c.fetchone()[0]
 if row_count == 0:
     c.execute("INSERT INTO users (username, password) VALUES ('admin', 'admin')")
     c.execute("INSERT INTO users (username, password) VALUES ('student', 'student')")
+    c.execute("INSERT INTO users (username, password) VALUES ('itladmin', 'itl')")
+    c.execute("INSERT INTO users (username, password) VALUES ('eeadmin', 'ee')")
+    c.execute("INSERT INTO users (username, password) VALUES ('ecadmin', 'ec')")
+    c.execute("INSERT INTO users (username, password) VALUES ('itsadmin', 'itsadmin')")
+    c.execute("INSERT INTO users (username, password) VALUES ('moduleorganiser', 'module')")
     conn.commit()
 
 # Create the tickets table for issues
@@ -88,40 +93,49 @@ def login() -> str:
 @app.route('/home')
 def home() -> str:
     if 'username' in session:
-        # Check if the logged in user is an admin
         if session['username'] == 'admin':
             return render_template('admin.html', username=session['username'])
+        elif session['username'] == 'ecadmin':
+            return render_template('ec.html', username=session['username'])
+        elif session['username'] == 'itladmin':
+            return render_template('itladmin.html', username=session['username'])
+        elif session['username'] == 'itsadmin':
+            return render_template('itsadmin.html', username=session['username'])
+        elif session['username'] == 'eeadmin':
+            return render_template('eeadmin.html', username=session['username'])
+        elif session['username'] == 'moduleorganiser':
+            return render_template('moduleo.html', username=session['username'])
         else:
             return render_template('home.html', username=session['username'])
     return redirect(url_for('login'))
 
-# EC page
-@app.route('/ec', methods=['GET', 'POST'])
-def ec() -> str:
-    if request.method == 'POST':
-        try:
-            # Connect to the database
-            conn = sqlite3.connect('system.db')
-            c = conn.cursor()
+# # EC page
+# @app.route('/ec', methods=['GET', 'POST'])
+# def ec() -> str:
+#     if request.method == 'POST':
+#         try:
+#             # Connect to the database
+#             conn = sqlite3.connect('system.db')
+#             c = conn.cursor()
 
-            # Get the details from the form and insert into the database
-            title = request.form['title']
-            description = request.form['description']
-            status = 'pending'
-            user_id = session['user_id']
-            c.execute("INSERT INTO ecs (user_id, title, description, status) VALUES (?, ?, ?, ?)",
-                      (user_id, title, description, status))
-            conn.commit()
+#             # Get the details from the form and insert into the database
+#             title = request.form['title']
+#             description = request.form['description']
+#             status = 'pending'
+#             user_id = session['user_id']
+#             c.execute("INSERT INTO ecs (user_id, title, description, status) VALUES (?, ?, ?, ?)",
+#                       (user_id, title, description, status))
+#             conn.commit()
 
-            # Close the database
-            conn.close()
-        except Exception as e:
-            # Handle errors
-            return render_template('error.html', message="An error occurred while accessing the database.")
+#             # Close the database
+#             conn.close()
+#         except Exception as e:
+#             # Handle errors
+#             return render_template('error.html', message="An error occurred while accessing the database.")
 
-    if 'username' in session:
-        return render_template('ec.html', username = session['username'])
-    return redirect(url_for('login'))
+#     if 'username' in session:
+#         return render_template('ec.html', username = session['username'])
+#     return redirect(url_for('login'))
 
 # Issues page
 @app.route('/issues', methods=['GET', 'POST'])
@@ -150,7 +164,7 @@ def issues():
         # if admin return all the tickets in the database
         elif session['username'] == 'admin':
             try:
-                c.execute("SELECT users.username, tickets.title, tickets.description, tickets.status, tickets.created_at FROM tickets INNER JOIN users ON users.id = user_id")
+                c.execute("SELECT users.username, tickets.title, tickets.description, tickets.status, tickets.created_at FROM tickets INNER JOIN users ON users.id = user_id WHERE users.username = 'student'")
                 issues = c.fetchall()
                 conn.close
                 return render_template('issues.html', username=session['username'], issues=issues)
@@ -161,7 +175,45 @@ def issues():
         else:
             return render_template('issues.html', username=session['username'])
     return redirect(url_for('login'))
+    
+# EC PAGE A
+@app.route('/ecs', methods=['GET', 'POST'])
+def ec():
+    if 'username' in session:
+        # Connect to the database
+        conn = sqlite3.connect('system.db')
+        c = conn.cursor()
 
+        if request.method == 'POST':
+            # Get the form data
+            title = request.form['title']
+            description = request.form['description']
+            user_id = session['user_id']
+            status = 'pending'
+
+            try:
+                # Send the data to the database
+                c.execute("INSERT INTO ecs (user_id, title, description, status) VALUES (?, ?, ?, ?)",(user_id, title, description, status))
+                conn.commit()
+                message = "Your EC has been submitted."
+                return render_template('ecmsg.html', message=message)
+            except Exception as e:
+                conn.rollback()
+                return render_template('error.html', message=e)
+        # if admin return all the tickets in the database
+        elif session['username'] == 'ecadmin':
+            try:
+                c.execute("SELECT users.username, ecs.title, ecs.description, ecs.status, ecs.created_at FROM ecs INNER JOIN users ON users.id = user_id WHERE users.username = 'student'")
+                ecs = c.fetchall()
+                conn.close
+                return render_template('ec.html', username=session['username'], ecs=ecs)
+            except Exception as e:
+                # Handle errors
+                conn.rollback()
+                return render_template('error.html', message=e)
+        else:
+            return render_template('ec.html', username=session['username'])
+    return redirect(url_for('login'))
 # Logout page
 @app.route('/logout')
 def logout():

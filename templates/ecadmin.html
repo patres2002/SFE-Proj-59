@@ -3,17 +3,17 @@
   rel="stylesheet"
   href="{{ url_for('static', filename='css/home.css') }}"
 />
-<title>Issues - StuCare</title>
-{% endblock %} {% block body %} {% if session['username'] == 'student' %}
-
+<title>Home - StuCare</title>
+{% endblock %} {% block body %}
+<p>You are logged in as {{ username }}</p>
+<p>This page is not in use currently, maybe for other admin</p>
 <h1>Submit an Issue</h1>
-<form method="POST" action="{{ url_for('issues') }}">
+<form method="POST" action="{{ url_for('ec') }}">
   <div>
-    <label for="type">Type of issue</label>
+    <label for="type">Type of EC</label>
     <select name="type" id="type">
-      <option value="its">ITS</option>
+      <option value="its">Standard</option>
       <option value="itl">ITL</option>
-      <option value="eelab">EE Lab</option>
     </select>
   </div>
   <div>
@@ -26,8 +26,9 @@
   </div>
   <button type="submit">Submit</button>
 </form>
-{% elif session['username'] == 'admin' %} {% if issues|default %}
-<h1>Issues</h1>
+
+{% if ec|default %}
+<h1>EC</h1>
 <table>
   <thead>
     <tr>
@@ -39,18 +40,15 @@
     </tr>
   </thead>
   <tbody>
-    {% for issue in issues %}
+    {% for ec in ec %}
     <tr>
-      <td>{{ issue[0] }}</td>
-      <td>{{ issue[1] }}</td>
-      <td>{{ issue[2] }}</td>
-      <td>{{ issue[3] }}</td>
-      <td>{{ issue[4] }}</td>
+      <td>{{ ec[0] }}</td>
+      <td>{{ ec[1] }}</td>
+      <td>{{ ec[2] }}</td>
+      <td>{{ ec[3] }}</td>
+      <td>{{ ec[4] }}</td>
     </tr>
     {% endfor %}
   </tbody>
 </table>
-{% else %} {% endif %} {% else %}
-<p>You are logged in as {{ username }}</p>
-<p>You don't have privileges to access this page.</p>
 {% endif %} {% endblock %}

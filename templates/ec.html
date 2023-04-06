@@ -1,17 +1,43 @@
-{% extends 'base.html' %}
-
-{% block head %}
-<link rel="stylesheet" href="{{ url_for('static', filename='css/home.css') }}">
+{% extends 'base.html' %} {% block head %}
+<link
+  rel="stylesheet"
+  href="{{ url_for('static', filename='css/home.css') }}"
+/>
 <title>Extenuating Circumstances - StuCare</title>
-{% endblock %}
-
-{% block body %}
-<p>Applying for an EC for {{ username }}</p>
+{% endblock %} {% block body %} {% if session['username'] == 'student' %}
+<h1>EC FORM</h1>
 <form method="POST" action="{{ url_for('ec') }}">
-    <label for="title">Title:</label><br>
-    <input type="text" id="title" name="title"><br><br>
-    <label for="description">Description:</label><br>
-    <textarea id="description" name="description"></textarea><br><br>
-    <input type="submit" value="Submit">
+  <label for="title">Title:</label><br />
+  <input type="text" id="title" name="title" /><br /><br />
+  <label for="description">Description:</label><br />
+  <textarea id="description" name="description"></textarea><br /><br />
+  <input type="submit" value="Submit" />
 </form>
-{% endblock %}
+{% elif session['username'] == 'ecadmin' %} {% if ecs|default %}
+<h1>EC</h1>
+<table>
+  <thead>
+    <tr>
+      <th>Name</th>
+      <th>Title</th>
+      <th>Description</th>
+      <th>Status</th>
+      <th>Created</th>
+    </tr>
+  </thead>
+  <tbody>
+    {% for ec in ecs %}
+    <tr>
+      <td>{{ ec[0] }}</td>
+      <td>{{ ec[1] }}</td>
+      <td>{{ ec[2] }}</td>
+      <td>{{ ec[3] }}</td>
+      <td>{{ ec[4] }}</td>
+    </tr>
+    {% endfor %}
+  </tbody>
+</table>
+{% else %} {% endif %} {% else %}
+<p>You are logged in as {{ username }}</p>
+<p>You don't have privileges to access this page.</p>
+{% endif %} {% endblock %}
