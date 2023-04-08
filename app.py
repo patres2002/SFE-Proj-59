@@ -2,11 +2,11 @@ from flask import Flask, render_template, request, redirect, url_for, session
 import sqlite3
 
 app = Flask(__name__)
-
+#AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA
 app.secret_key = 'group59'
 
 # Connect to the database
-conn = sqlite3.connect('system.db')
+conn = sqlite3.connect('Asystem.db')
 c = conn.cursor()
 
 # Create the users table if it doesn't exist
@@ -53,6 +53,7 @@ conn.commit()
 conn.close()
 
 # Login page, or home page if logged in
+# Login page, or home page if logged in
 @app.route('/', methods=['GET', 'POST'])
 def login() -> str:
     if 'username' in session:
@@ -61,7 +62,7 @@ def login() -> str:
     if request.method == 'POST':
         try:
             # Connect to the database
-            conn = sqlite3.connect('system.db')
+            conn = sqlite3.connect('Asystem.db')
             c = conn.cursor()
 
             # Get the details from the form
@@ -142,7 +143,7 @@ def home() -> str:
 def issues():
     if 'username' in session:
         # Connect to the database
-        conn = sqlite3.connect('system.db')
+        conn = sqlite3.connect('Asystem.db')
         c = conn.cursor()
 
         if request.method == 'POST':
@@ -166,7 +167,7 @@ def issues():
             try:
                 c.execute("SELECT users.username, tickets.title, tickets.description, tickets.status, tickets.created_at FROM tickets INNER JOIN users ON users.id = user_id WHERE users.username = 'student'")
                 issues = c.fetchall()
-                conn.close
+                conn.close()
                 return render_template('issues.html', username=session['username'], issues=issues)
             except Exception as e:
                 # Handle errors
@@ -181,7 +182,7 @@ def issues():
 def ec():
     if 'username' in session:
         # Connect to the database
-        conn = sqlite3.connect('system.db')
+        conn = sqlite3.connect('Asystem.db')
         c = conn.cursor()
 
         if request.method == 'POST':
@@ -200,7 +201,7 @@ def ec():
             except Exception as e:
                 conn.rollback()
                 return render_template('error.html', message=e)
-        # if admin return all the tickets in the database
+        # if ecadmin return all the ec in the database
         elif session['username'] == 'ecadmin':
             try:
                 c.execute("SELECT users.username, ecs.title, ecs.description, ecs.status, ecs.created_at FROM ecs INNER JOIN users ON users.id = user_id WHERE users.username = 'student'")
@@ -224,4 +225,5 @@ def logout():
 
 
 if __name__ == '__main__':
+    app.debug = True
     app.run()
