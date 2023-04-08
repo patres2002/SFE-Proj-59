@@ -1,1 +1,46 @@
+<!DOCTYPE html>
+<html>
+<head>
+	<title>Extenuating Circumstance Form</title>
+	<link rel="stylesheet" type="text/css" href="ec.css">
+</head>
+<body>
+	<h1>Extenuating Circumstance Form</h1>
+	<form>
+		<fieldset>
+			<legend>Student Information</legend>
+			<label for="name">Name:</label>
+			<input type="text" id="name" name="name" required>
 
+			<label for="id">Student ID Number:</label>
+			<input type="text" id="id" name="id" required>
+
+			<label for="email">Email Address:</label>
+			<input type="email" id="email" name="email" required>
+
+			<label for="phone">Phone Number:</label>
+			<input type="text" id="phone" name="phone" required
+		</fieldset>
+
+		<fieldset>
+			<legend>Course Information</legend>
+			<label for="course-name">Course Name:</label>
+			<input type="text" id="course-name" name="course-name" required>
+
+			<label for="instructor">Course Instructor:</label>
+			<input type="text" id="instructor" name="instructor" required>
+
+			<label for="course-code">Course Code:</label>
+			<input type="text" id="course-code" name="course-code" required>
+		</fieldset>
+
+		<fieldset>
+			<legend>Description of Circumstance</legend>
+			<label for="description">Please provide a detailed explanation of your extenuating circumstance. Include any relevant dates and supporting documentation.</label>
+			<textarea id="description" name="description" required></textarea>
+		</fieldset>
+
+		<input type="submit" value="Submit">
+	</form>
+</body>
+</html>
