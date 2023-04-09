@@ -2,11 +2,10 @@ from flask import Flask, render_template, request, redirect, url_for, session
 import sqlite3
 
 app = Flask(__name__)
-#AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA
 app.secret_key = 'group59'
 
 # Connect to the database
-conn = sqlite3.connect('Asystem.db')
+conn = sqlite3.connect('system.db')
 c = conn.cursor()
 
 # Create the users table if it doesn't exist
@@ -32,6 +31,7 @@ c.execute('''CREATE TABLE IF NOT EXISTS tickets (
     id INTEGER PRIMARY KEY,
     user_id INTEGER,
     title TEXT NOT NULL,
+    type TEXT NOT NULL,
     description TEXT,
     status TEXT NOT NULL,
     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
@@ -53,7 +53,6 @@ conn.commit()
 conn.close()
 
 # Login page, or home page if logged in
-# Login page, or home page if logged in
 @app.route('/', methods=['GET', 'POST'])
 def login() -> str:
     if 'username' in session:
@@ -62,7 +61,7 @@ def login() -> str:
     if request.method == 'POST':
         try:
             # Connect to the database
-            conn = sqlite3.connect('Asystem.db')
+            conn = sqlite3.connect('system.db')
             c = conn.cursor()
 
             # Get the details from the form
@@ -85,7 +84,7 @@ def login() -> str:
             conn.close()
         except Exception as e:
             # Handle errors
-            return render_template('error.html', message="An error occurred while accessing the database.")
+            return render_template('error.html', message=e)
 
     # If the details are incorrect, show the login page
     return render_template('login.html')
@@ -97,7 +96,7 @@ def home() -> str:
         if session['username'] == 'admin':
             return render_template('admin.html', username=session['username'])
         elif session['username'] == 'ecadmin':
-            return render_template('ec.html', username=session['username'])
+            return render_template('ecadmin.html', username=session['username'])
         elif session['username'] == 'itladmin':
             return render_template('itladmin.html', username=session['username'])
         elif session['username'] == 'itsadmin':
@@ -143,19 +142,20 @@ def home() -> str:
 def issues():
     if 'username' in session:
         # Connect to the database
-        conn = sqlite3.connect('Asystem.db')
+        conn = sqlite3.connect('system.db')
         c = conn.cursor()
 
         if request.method == 'POST':
             # Get the form data
             title = request.form['title']
+            type = request.form['type']
             description = request.form['description']
             user_id = session['user_id']
             status = 'pending'
 
             try:
                 # Send the data to the database
-                c.execute("INSERT INTO tickets (user_id, title, description, status) VALUES (?, ?, ?, ?)",(user_id, title, description, status))
+                c.execute("INSERT INTO tickets (user_id, title, type, description, status) VALUES (?, ?, ?, ?, ?)",(user_id, title, type, description, status))
                 conn.commit()
                 message = "Your issue has been submitted."
                 return render_template('message.html', message=message)
@@ -165,7 +165,7 @@ def issues():
         # if admin return all the tickets in the database
         elif session['username'] == 'admin':
             try:
-                c.execute("SELECT users.username, tickets.title, tickets.description, tickets.status, tickets.created_at FROM tickets INNER JOIN users ON users.id = user_id WHERE users.username = 'student'")
+                c.execute("SELECT users.username, tickets.type, tickets.title, tickets.description, tickets.status, tickets.created_at FROM tickets INNER JOIN users ON users.id = user_id WHERE users.username = 'student'")
                 issues = c.fetchall()
                 conn.close()
                 return render_template('issues.html', username=session['username'], issues=issues)
@@ -177,12 +177,12 @@ def issues():
             return render_template('issues.html', username=session['username'])
     return redirect(url_for('login'))
     
-# EC PAGE A
+# EC Page
 @app.route('/ecs', methods=['GET', 'POST'])
 def ec():
     if 'username' in session:
         # Connect to the database
-        conn = sqlite3.connect('Asystem.db')
+        conn = sqlite3.connect('system.db')
         c = conn.cursor()
 
         if request.method == 'POST':
@@ -215,6 +215,7 @@ def ec():
         else:
             return render_template('ec.html', username=session['username'])
     return redirect(url_for('login'))
+
 # Logout page
 @app.route('/logout')
 def logout():

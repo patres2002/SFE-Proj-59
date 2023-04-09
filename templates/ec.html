@@ -8,7 +8,7 @@
 
 {% block body %}
 	<h1>Extenuating Circumstance Form</h1>
-	<form>
+	<form method="POST" action="{{ url_for('ec') }}">
 		<fieldset>
 			<legend>Student Information</legend>
 			<label for="name">Name:</label>
