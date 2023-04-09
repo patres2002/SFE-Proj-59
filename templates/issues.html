@@ -4,7 +4,7 @@
   href="{{ url_for('static', filename='css/home.css') }}"
 />
 <title>Issues - StuCare</title>
-{% endblock %} {% block body %} {% if session['username'] == 'student' %}
+{% endblock %} {% block body %} {% if session['role'] == 'student' %}
 
 <h1>Submit an Issue</h1>
 <form method="POST" action="{{ url_for('issues') }}">
@@ -26,7 +26,7 @@
   </div>
   <button type="submit">Submit</button>
 </form>
-{% elif session['username'] == 'admin' %} {% if issues|default %}
+{% elif session['role'] == 'admin' %} {% if issues|default %}
 <h1>Issues</h1>
 <table>
   <thead>
