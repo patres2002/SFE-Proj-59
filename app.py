@@ -1,3 +1,4 @@
+import os
 from flask import Flask, render_template, request, redirect, url_for, session
 import sqlite3
 
@@ -35,7 +36,6 @@ c.execute('''CREATE TABLE IF NOT EXISTS tickets (
     description TEXT,
     status TEXT NOT NULL,
     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-    updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
     FOREIGN KEY (user_id) REFERENCES users(id))''')
 
 # Create the ecs table for ECs
@@ -47,7 +47,7 @@ c.execute('''CREATE TABLE IF NOT EXISTS ecs (
     description TEXT,
     status TEXT NOT NULL,
     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-    updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP)''')
+    evidence TEXT)''')
 
 # Save the changes and close the database
 conn.commit()
@@ -177,10 +177,19 @@ def ec():
             instructor = request.form['instructor']
             user_id = session['user_id']
             status = 'pending'
+            filename = None
+
+            # Save the uploaded file
+            uploaded_file = request.files.get('evidence')
+            if uploaded_file:
+                print('here')
+                filename = f"{user_id}_{uploaded_file.filename}"
+                file_path = os.path.join('static', 'uploads', filename)
+                uploaded_file.save(file_path)
 
             try:
                 # Send the data to the database
-                c.execute("INSERT INTO ecs (user_id, course_name, instructor, description, status) VALUES (?, ?, ?, ?, ?)", (user_id, course_name, instructor, description, status))
+                c.execute("INSERT INTO ecs (user_id, course_name, instructor, description, status, evidence) VALUES (?, ?, ?, ?, ?, ?)", (user_id, course_name, instructor, description, status, filename))
                 conn.commit()
                 message = "Your EC has been submitted."
                 return render_template('message.html', message=message)
@@ -190,9 +199,9 @@ def ec():
         # if ecadmin return all the ec in the database
         elif session['username'] == 'ecadmin':
             try:
-                c.execute("SELECT users.username, ecs.course_name, ecs.instructor, ecs.description, ecs.status, ecs.created_at FROM ecs INNER JOIN users ON users.id = user_id")
+                c.execute("SELECT users.username, ecs.course_name, ecs.instructor, ecs.description, ecs.status, ecs.created_at, ecs.evidence FROM ecs INNER JOIN users ON users.id = user_id")
                 ecs = c.fetchall()
-                conn.close
+                conn.close()
                 return render_template('ec.html', username=session['username'], ecs=ecs)
             except Exception as e:
                 # Handle errors

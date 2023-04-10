@@ -9,7 +9,7 @@
 {% block body %}
 {% if session['role'] == 'student' %}
 	<h1>Extenuating Circumstance Form</h1>
-	<form method="POST" action="{{ url_for('ec') }}">
+	<form method="POST" action="{{ url_for('ec') }}" enctype = "multipart/form-data">
     <div class="wrapper">
       <input type="radio" name="claim_type" id="option-1" checked onchange="toggleRequired()">
       <input type="radio" name="claim_type" id="option-2" onchange="toggleRequired()">
@@ -66,6 +66,7 @@
       <th>Description</th>
       <th>Status</th>
       <th>Created</th>
+      <th>Evidence</th>
     </tr>
   </thead>
   <tbody>
@@ -77,6 +78,13 @@
       <td>{{ claim[3] }}</td>
       <td>{{ claim[4] }}</td>
       <td>{{ claim[5] }}</td>
+      <td>
+        {% if claim[6] %}
+        <a href="{{ url_for('static', filename='uploads/' + claim[6]) }}" target="_blank">View Evidence</a>
+        {% else %}
+        No Evidence
+        {% endif %}
+      </td>
     </tr>
     {% endfor %}
   </tbody>
