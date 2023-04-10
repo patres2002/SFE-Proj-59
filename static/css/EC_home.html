@@ -1,0 +1,55 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+	<meta charset="UTF-8">
+	<title>Extenuating Circumstances</title>
+	<link rel="stylesheet" href="style.css">
+</head>
+<body>
+	<header>
+		<ul>
+			<li><a href="#">Issues</a></li>
+			<li><a href="#">Service Status</a></li>
+			<li><a href="#">EC Claim</a></li>
+		</ul>
+	</header>
+	<main class="container">
+		<section id="submit-new-claim">
+			<h2>Submit new Claim</h2>
+			<form>
+				<label for="full-name">Full Name:</label>
+				<input type="text" id="full-name" name="full-name">
+
+				<label for="email">Email:</label>
+				<input type="email" id="email" name="email">
+
+				<label for="description">Description:</label>
+				<textarea id="description" name="description"></textarea>
+
+				<button class="btn-primary">Submit</button>
+			</form>
+		</section>
+		<section id="claims-under-consideration">
+			<h2>Claims under Consideration</h2>
+			<ul>
+				<li>Claim 1</li>
+				<li>Claim 2</li>
+				<li>Claim 3</li>
+			</ul>
+		</section>
+		<section id="completed-claims">
+			<h2>Completed Claims</h2>
+			<label for="select-completed-claims">Select a claim:</label>
+			<select id="select-completed-claims">
+				<option value="claim1">Claim 1</option>
+				<option value="claim2">Claim 2</option>
+				<option value="claim3">Claim 3</option>
+			</select>
+
+			<textarea id="completed-claim-details" disabled>Lorem ipsum dolor sit amet, consectetur adipiscing elit. Nullam semper, erat ac sollicitudin aliquet, nibh nibh bibendum eros, vitae dapibus lacus enim nec odio. Sed consequat eros vel nunc venenatis, vel iaculis nisi euismod. Proin vehicula tincidunt eleifend. Nulla luctus augue eget elit efficitur, quis sagittis magna consectetur. Curabitur vulputate enim ac velit bibendum efficitur. Nunc auctor malesuada nisi eu lobortis. Donec auctor mi in lectus suscipit interdum. Nullam ultricies tincidunt orci, ac pharetra nibh lacinia vel. In hac habitasse platea dictumst. Nulla et aliquam eros. Mauris volutpat magna id justo molestie, eu tristique quam vestibulum. Donec ut ex in justo hendrerit facilisis.</textarea>
+
+			<button class="btn-primary">Download PDF</button>
+		</section>
+	</main>
+</body>
+</html>
