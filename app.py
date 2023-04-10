@@ -42,7 +42,8 @@ c.execute('''CREATE TABLE IF NOT EXISTS tickets (
 c.execute('''CREATE TABLE IF NOT EXISTS ecs (
     id INTEGER PRIMARY KEY,
     user_id INTEGER,
-    title TEXT NOT NULL,
+    course_name TEXT NOT NULL,
+    instructor TEXT NOT NULL,
     description TEXT,
     status TEXT NOT NULL,
     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
@@ -55,11 +56,16 @@ conn.close()
 # Login page, or home page if logged in
 @app.route('/', methods=['GET', 'POST'])
 def login() -> str:
+    form_submitted = False  # A flag to check if the form has been submitted
+
     if 'username' in session:
         return redirect(url_for('home'))
 
     if request.method == 'POST':
         try:
+            # Set the flag to True when form is submitted
+            form_submitted = True
+
             # Connect to the database
             conn = sqlite3.connect('system.db')
             c = conn.cursor()
@@ -86,8 +92,9 @@ def login() -> str:
             # Handle errors
             return render_template('error.html', message=e)
 
-    # If the details are incorrect, show the login page
-    return render_template('login.html')
+    # If the details are incorrect and the form has been submitted, show the error message
+    error = "Incorrect username or password" if form_submitted else None
+    return render_template('login.html', error=error)
 
 # Home page
 @app.route('/home')
@@ -134,7 +141,8 @@ def issues():
         # if admin or module organizer, return all the tickets in the database
         elif role == 'admin':
             try:
-                c.execute("SELECT users.username, tickets.type, tickets.title, tickets.description, tickets.status, tickets.created_at FROM tickets INNER JOIN users ON users.id = user_id WHERE users.username = 'student'")
+                c.execute("SELECT users.username, tickets.type, tickets.title, tickets.description, tickets.status, tickets.created_at FROM tickets INNER JOIN users ON users.id = user_id")
+                # this should be different for each admin
                 issues = c.fetchall()
                 conn.close()
                 return render_template('issues.html', username=session['username'], issues=issues)
@@ -156,30 +164,33 @@ def issues():
 @app.route('/ecs', methods=['GET', 'POST'])
 def ec():
     if 'username' in session:
+        role = session['role']
+
         # Connect to the database
         conn = sqlite3.connect('system.db')
         c = conn.cursor()
 
         if request.method == 'POST':
             # Get the form data
-            title = request.form['title']
             description = request.form['description']
+            course_name = request.form['course_name']
+            instructor = request.form['instructor']
             user_id = session['user_id']
             status = 'pending'
 
             try:
                 # Send the data to the database
-                c.execute("INSERT INTO ecs (user_id, title, description, status) VALUES (?, ?, ?, ?)",(user_id, title, description, status))
+                c.execute("INSERT INTO ecs (user_id, course_name, instructor, description, status) VALUES (?, ?, ?, ?, ?)", (user_id, course_name, instructor, description, status))
                 conn.commit()
                 message = "Your EC has been submitted."
-                return render_template('ecmsg.html', message=message)
+                return render_template('message.html', message=message)
             except Exception as e:
                 conn.rollback()
                 return render_template('error.html', message=e)
         # if ecadmin return all the ec in the database
         elif session['username'] == 'ecadmin':
             try:
-                c.execute("SELECT users.username, ecs.title, ecs.description, ecs.status, ecs.created_at FROM ecs INNER JOIN users ON users.id = user_id WHERE users.username = 'student'")
+                c.execute("SELECT users.username, ecs.course_name, ecs.instructor, ecs.description, ecs.status, ecs.created_at FROM ecs INNER JOIN users ON users.id = user_id")
                 ecs = c.fetchall()
                 conn.close
                 return render_template('ec.html', username=session['username'], ecs=ecs)
@@ -199,9 +210,6 @@ def logout():
     session.pop('user_id', None)
     session.pop('role', None)
     return redirect(url_for('login'))
-
-    # If the details are incorrect, show the login page
-    return render_template('login.html')
 
 if __name__ == '__main__':
     app.debug = True
