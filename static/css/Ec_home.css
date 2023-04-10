@@ -1,0 +1,24 @@
+* {
+	box-sizing: border-box;
+	margin: 0;
+	padding: 0;
+}
+
+body {
+	font-family: Arial, sans-serif;
+}
+
+header {
+	background-color: #364f6b;
+	color: #fff;
+	padding: 1rem;
+	display: flex;
+	justify-content: flex-end;
+}
+
+header ul {
+	display: flex;
+}
+
+header ul li {
+	margin-left: 

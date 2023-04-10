@@ -2,19 +2,29 @@ body {
 	font-family: Arial, sans-serif;
 }
 
-h1 {
+* {
+	box-sizing: border-box;
+	margin: 0;
+	padding: 0;
+}
+
+header, h1 {
+	background-color: #2255aa;
+	color: #fff;
+	padding: 2
 	text-align: center;
 }
 
+
 form {
-	max-width: 800px;
+	max-width: 1000px;
 	margin: 0 auto;
 	padding: 20px;
-	border: 1px solid #ccc;
+	border: 0.5px solid #ccc;
 }
 
 fieldset {
-	margin-bottom: 20px;
+	margin-bottom: 30px;
 }
 
 legend {
@@ -38,7 +48,7 @@ textarea {
 }
 
 input[type="submit"] {
-	background-color: #4CAF50;
+	background-color: blue;
 	color: white;
 	padding: 12px 20px;
 	border: none;
