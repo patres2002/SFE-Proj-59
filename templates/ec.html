@@ -1,20 +1,46 @@
-{% extends 'base.html' %} {% block head %}
-<link
-  rel="stylesheet"
-  href="{{ url_for('static', filename='css/home.css') }}"
-/>
-<title>Extenuating Circumstances - StuCare</title>
-{% endblock %} {% block body %} {% if session['username'] == 'student' %}
-<h1>EC FORM</h1>
-<form method="POST" action="{{ url_for('ec') }}">
-  <label for="title">Title:</label><br />
-  <input type="text" id="title" name="title" /><br /><br />
-  <label for="description">Description:</label><br />
-  <textarea id="description" name="description"></textarea><br /><br />
-  <input type="submit" value="Submit" />
-</form>
-{% elif session['username'] == 'ecadmin' %} {% if ecs|default %}
-<h1>EC</h1>
+{% extends 'base.html' %}
+
+{% block head %}
+	<title>Extenuating Circumstance Form</title>
+	<link rel="stylesheet" href="{{ url_for('static', filename='css/home.css') }}">
+	<link rel="stylesheet" href="{{ url_for('static', filename='css/ec.css') }}">
+{% endblock %}
+
+{% block body %}
+{% if session['role'] == 'student' %}
+	<h1>Extenuating Circumstance Form</h1>
+	<form method="POST" action="{{ url_for('ec') }}">
+    <div class="wrapper">
+      <input type="radio" name="claim_type" id="option-1" checked>
+      <input type="radio" name="claim_type" id="option-2">
+        <label for="option-1" class="option option-1">
+          <div class="dot"></div>
+           <span>Standard</span>
+           </label>
+        <label for="option-2" class="option option-2">
+          <div class="dot"></div>
+           <span>Self Certified</span>
+        </label>
+     </div>
+		<fieldset>
+			<legend>Course Information</legend>
+			<label for="course_name">Course Name:</label>
+			<input type="text" id="course_name" name="course_name" required>
+
+			<label for="instructor">Course Instructor:</label>
+			<input type="text" id="instructor" name="instructor" required>
+		</fieldset>
+
+		<fieldset>
+			<legend>Description of Circumstance</legend>
+			<label for="description">Please provide a detailed explanation of your extenuating circumstance. Include any relevant dates and supporting documentation.</label>
+			<textarea id="description" name="description" required></textarea>
+		</fieldset>
+
+		<input type="submit" value="Submit">
+	</form>
+{% elif session['role'] == 'admin' %} {% if ecs|default %}
+<h1>ECs</h1>
 <table>
   <thead>
     <tr>
