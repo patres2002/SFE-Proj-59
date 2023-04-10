@@ -11,8 +11,8 @@
 	<h1>Extenuating Circumstance Form</h1>
 	<form method="POST" action="{{ url_for('ec') }}">
     <div class="wrapper">
-      <input type="radio" name="claim_type" id="option-1" checked>
-      <input type="radio" name="claim_type" id="option-2">
+      <input type="radio" name="claim_type" id="option-1" checked onchange="toggleRequired()">
+      <input type="radio" name="claim_type" id="option-2" onchange="toggleRequired()">
         <label for="option-1" class="option option-1">
           <div class="dot"></div>
            <span>Standard</span>
@@ -24,21 +24,37 @@
      </div>
 		<fieldset>
 			<legend>Course Information</legend>
-			<label for="course_name">Course Name:</label>
+			<label for="course_name" class="required">Course Name:</label>
 			<input type="text" id="course_name" name="course_name" required>
 
-			<label for="instructor">Course Instructor:</label>
+			<label for="instructor" class="required">Course Instructor:</label>
 			<input type="text" id="instructor" name="instructor" required>
 		</fieldset>
 
 		<fieldset>
 			<legend>Description of Circumstance</legend>
-			<label for="description">Please provide a detailed explanation of your extenuating circumstance. Include any relevant dates and supporting documentation.</label>
+			<label for="description" class="required">Please provide a detailed explanation of your extenuating circumstance. Include any relevant dates and supporting documentation.</label>
 			<textarea id="description" name="description" required></textarea>
 		</fieldset>
+    <fieldset>
+      <legend>Supporting Documentation</legend>
+      <label for="evidence" id="evidenceLabel" class="required">Upload any relevant files as evidence:</label>
+      <input type="file" id="evidence" name="evidence" accept=".pdf,.doc,.docx,.jpg,.jpeg,.png" required>
+    </fieldset>
 
 		<input type="submit" value="Submit">
 	</form>
+  <script>
+  function toggleRequired() {
+    if (document.getElementById('option-1').checked) {
+      document.getElementById('evidence').required = true;
+      document.getElementById('evidenceLabel').classList.add('required');
+    } else if (document.getElementById('option-2').checked) {
+      document.getElementById('evidence').required = false;
+      document.getElementById('evidenceLabel').classList.remove('required');
+    }
+  }
+  </script>
 {% elif session['role'] == 'admin' %} {% if ecs|default %}
 <h1>ECs</h1>
 <table>
