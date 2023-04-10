@@ -132,7 +132,7 @@ def issues():
                 conn.rollback()
                 return render_template('error.html', message=e)
         # if admin or module organizer, return all the tickets in the database
-        else:
+        elif role == 'admin':
             try:
                 c.execute("SELECT users.username, tickets.type, tickets.title, tickets.description, tickets.status, tickets.created_at FROM tickets INNER JOIN users ON users.id = user_id WHERE users.username = 'student'")
                 issues = c.fetchall()
@@ -142,6 +142,14 @@ def issues():
                 # Handle errors
                 conn.rollback()
                 return render_template('error.html', message=e)
+        # Else if student then just return the page as normal
+        else:
+            types = [
+                {'value': 'eelab', 'label': 'EE Lab'},
+                {'value': 'itl', 'label': 'ITL'},
+                {'value': 'its', 'label': 'ITS'}
+            ]
+            return render_template('issues.html', username=session['username'], types=types)
     return redirect(url_for('login'))
 
 # EC Page

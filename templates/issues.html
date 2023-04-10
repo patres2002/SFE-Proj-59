@@ -11,9 +11,9 @@
   <div>
     <label for="type">Type of issue</label>
     <select name="type" id="type">
-      <option value="its">ITS</option>
-      <option value="itl">ITL</option>
-      <option value="eelab">EE Lab</option>
+      {% for type in types %}
+      <option value="{{ type.value }}">{{ type.label }}</option>
+      {% endfor %}
     </select>
   </div>
   <div>
