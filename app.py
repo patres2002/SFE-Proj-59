@@ -39,6 +39,7 @@ c.execute('''CREATE TABLE IF NOT EXISTS tickets (
     description TEXT,
     status TEXT NOT NULL,
     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    response TEXT,
     FOREIGN KEY (user_id) REFERENCES users(id))''')
 
 # Create the ecs table for ECs
@@ -145,25 +146,71 @@ def issues():
                 return render_template('error.html', message=e)
         # if admin or module organizer, return all the tickets in the database
         elif role == 'admin':
+
+            # get the department name based on the username that admin logged in with
+            # this is a dictionary with the department names that the username will be compared to
+            departments = {
+                'itladmin': 'itl',
+                'eelabadmin': 'eelab',
+                'itsadmin': 'its'
+            }
+
+            department = departments.get(session['username'], None)
+            if department is None:
+                return render_template('error.html', message="Department not found")
             try:
-                c.execute("SELECT users.username, tickets.type, tickets.title, tickets.description, tickets.status, tickets.created_at FROM tickets INNER JOIN users ON users.id = user_id")
+                # This will only return the tickets for the admin's specific department
+                c.execute("SELECT users.username, tickets.id, tickets.type, tickets.title, tickets.description, tickets.status, tickets.created_at FROM tickets INNER JOIN users ON users.id = user_id WHERE tickets.type = ?", (department,))
                 # this should be different for each admin
                 issues = c.fetchall()
+                print(issues)
                 conn.close()
                 return render_template('issues.html', username=session['username'], issues=issues)
             except Exception as e:
                 # Handle errors
                 conn.rollback()
+                # print(department)
                 return render_template('error.html', message=e)
-        # Else if student then just return the page as normal
+        # Else if student then just return the page as normal and show the previously submitted issues
         else:
-            types = [
-                {'value': 'eelab', 'label': 'EE Lab'},
-                {'value': 'itl', 'label': 'ITL'},
-                {'value': 'its', 'label': 'ITS'}
-            ]
-            return render_template('issues.html', username=session['username'], types=types)
+            user_id = session['user_id']
+            try:
+                c.execute("SELECT id, type, title, description, status, created_at FROM tickets WHERE user_id = ?", (user_id,))
+                issues = c.fetchall()
+
+                types = [
+                    {'value': 'eelab', 'label': 'EE Lab'},
+                    {'value': 'itl', 'label': 'ITL'},
+                    {'value': 'its', 'label': 'ITS'}
+                ]
+                return render_template('issues.html', username=session['username'], types=types, issues=issues)
+            except Exception as e:
+                # Handle errors
+                conn.rollback()
+                return render_template('error.html', message=e)
     return redirect(url_for('login'))
+
+# Route for handling updating the issues
+@app.route('/issues/update', methods=['POST'])
+def update_issue():
+    if 'username' in session and session['role'] == 'admin':
+        issue_id = request.form['issue_id']
+        response = request.form['response']
+        status = request.form['status']
+
+        conn = sqlite3.connect('system.db')
+        c = conn.cursor()
+
+        try:
+            c.execute("UPDATE tickets SET response = ?, status = ? WHERE id = ?", (response, status, issue_id))
+            conn.commit()
+            return redirect(url_for('issues'))
+        except Exception as e:
+            conn.rollback()
+            return render_template('error.html', message=e)
+    # if not signed in, go to the login screen
+    return redirect(url_for('login'))
+
 
 # EC Page
 @app.route('/ecs', methods=['GET', 'POST'])
@@ -217,7 +264,7 @@ def ec():
                 return render_template('error.html', message=e)
 
         # Fetch submitted ECs for students
-        if session['role'] == 'student':
+        if role == 'student':
             try:
                 user_id = session['user_id']
                 c.execute("SELECT * FROM ecs WHERE user_id = ?", (user_id,))
