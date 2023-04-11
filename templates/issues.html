@@ -47,6 +47,25 @@
       <td>{{ issue[3] }}</td>
       <td>{{ issue[4] }}</td>
       <td>{{ issue[5] }}</td>
+      <td>
+        <ul>
+            {% if issue[-1]|length > 0 %}
+                {% for message in issue[-1] %}
+                    <li><strong>{{ message[0] }}</strong>: {{ message[1] }} <em>({{ message[2] }})</em></li>
+                {% endfor %}
+            {% else %}
+            <li>Awaiting response</li>
+            {% endif %}
+        </ul>
+    </td>
+    <td>
+        <form method="POST" action="{{ url_for('submit_message') }}">
+            <input type="hidden" name="ticket_id" value="{{ issue[1] }}" />
+            <label>Message</label>
+            <textarea name="message" required></textarea>
+            <button type="submit">Send</button>
+        </form>
+    </td>
     </tr>
     {% endfor %}
   </tbody>
@@ -69,29 +88,41 @@
     <tbody>
         {% for issue in issues %}
         <tr>
-            <td>{{ issue[0] }}</td>
-            <td>{{ issue[1] }}</td>
-            <td>{{ issue[2] }}</td>
-            <td>{{ issue[3] }}</td>
-            <td>{{ issue[4] }}</td>
-            <td>{{ issue[5] }}</td>
-            <td>{{ issue[6] }}</td>
+            <td>{{ issue }}</td>
             <td>
             <!-- admins can reply to tickets and mark them as resolved -->
-                <form method="POST" action="{{ url_for('update_issue') }}">
-                    <input type="hidden" name="issue_id" value="{{ issue[1] }}" />
-                    <label>Response</label>
-                    <textarea name="response"></textarea>
-                    <label>Status</label>
-                    <select name="status">
-                        <option value="pending">Pending</option>
-                        <option value="resolved">Resolved</option>
-                    </select>
-                    <button type="submit">Update</button>
-                </form>
-            </td>
-        </tr>
-        {% endfor %}
+            <ul>
+                {% if issue[-1]|length > 0 %}
+                    {% for message in issue[-1] %}
+                        <li><strong>{{ message[0] }}</strong>: {{ message[1] }} <em>({{ message[2] }})</em></li>
+                    {% endfor %}
+                {% else %}
+                    <li>Awaiting response</li>
+                {% endif %}
+            </ul>
+        </td>
+        <td>
+            <form method="POST" action="{{ url_for('submit_message') }}">
+                <input type="hidden" name="ticket_id" value="{{ issue[1] }}" />
+                <label>Message</label>
+                <textarea name="message" required></textarea>
+                <button type="submit">Send</button>
+            </form>
+        </td>
+        <!-- Add status dropdown for admins to update ticket status -->
+        <td>
+            <form method="POST" action="{{ url_for('update_issue') }}">
+                <input type="hidden" name="issue_id" value="{{ issue[1] }}" />
+                <label>Status</label>
+                <select name="status">
+                    <option {% if issue[6] == 'pending' %}selected{% endif %} value="pending">Pending</option>
+                    <option {% if issue[6] == 'resolved' %}selected{% endif %} value="resolved">Resolved</option>
+                </select>
+                <button type="submit">Update</button>
+            </form>
+        </td>
+    </tr>
+    {% endfor %}
     </tbody>
 </table>
 {% else %}

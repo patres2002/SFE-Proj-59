@@ -39,8 +39,16 @@ c.execute('''CREATE TABLE IF NOT EXISTS tickets (
     description TEXT,
     status TEXT NOT NULL,
     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-    response TEXT,
     FOREIGN KEY (user_id) REFERENCES users(id))''')
+
+c.execute('''CREATE TABLE IF NOT EXISTS ticket_messages (
+    id INTEGER PRIMARY KEY AUTOINCREMENT,
+    ticket_id INTEGER,
+    user_id INTEGER,
+    message TEXT,
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    FOREIGN KEY (ticket_id) REFERENCES tickets(id),
+    FOREIGN KEY (user_id) REFERENCES users(id));''')
 
 # Create the ecs table for ECs
 c.execute('''CREATE TABLE IF NOT EXISTS ecs (
@@ -117,7 +125,13 @@ def home() -> str:
             return render_template('error.html', message='Invalid role')
     return redirect(url_for('login'))
 
-# Issues page
+# Fetch messages for an issue
+def get_ticket_messages(c, ticket_id):
+    c.execute("SELECT users.username, ticket_messages.message, ticket_messages.created_at FROM ticket_messages INNER JOIN users ON users.id = ticket_messages.user_id WHERE ticket_id = ? ORDER BY ticket_messages.created_at", (ticket_id,))
+    messages = c.fetchall()
+    return messages
+
+# Issues route
 @app.route('/issues', methods=['GET', 'POST'])
 def issues():
     if 'username' in session:
@@ -137,57 +151,66 @@ def issues():
 
             try:
                 # Send the data to the database
-                c.execute("INSERT INTO tickets (user_id, title, type, description, status) VALUES (?, ?, ?, ?, ?)",(user_id, title, type, description, status))
+                c.execute("INSERT INTO tickets (user_id, title, type, description, status) VALUES (?, ?, ?, ?, ?)", (user_id, title, type, description, status))
                 conn.commit()
                 message = "Your issue has been submitted."
                 return render_template('message.html', message=message)
             except Exception as e:
                 conn.rollback()
                 return render_template('error.html', message=e)
-        # if admin or module organizer, return all the tickets in the database
-        elif role == 'admin':
 
-            # get the department name based on the username that admin logged in with
-            # this is a dictionary with the department names that the username will be compared to
-            departments = {
-                'itladmin': 'itl',
-                'eelabadmin': 'eelab',
-                'itsadmin': 'its'
-            }
-
-            department = departments.get(session['username'], None)
-            if department is None:
-                return render_template('error.html', message="Department not found")
+        if role == 'student':
             try:
-                # This will only return the tickets for the admin's specific department
-                c.execute("SELECT users.username, tickets.id, tickets.type, tickets.title, tickets.description, tickets.status, tickets.created_at FROM tickets INNER JOIN users ON users.id = user_id WHERE tickets.type = ?", (department,))
-                # this should be different for each admin
-                issues = c.fetchall()
-                print(issues)
-                conn.close()
-                return render_template('issues.html', username=session['username'], issues=issues)
-            except Exception as e:
-                # Handle errors
-                conn.rollback()
-                # print(department)
-                return render_template('error.html', message=e)
-        # Else if student then just return the page as normal and show the previously submitted issues
-        else:
-            user_id = session['user_id']
-            try:
+                user_id = session['user_id']
                 c.execute("SELECT id, type, title, description, status, created_at FROM tickets WHERE user_id = ?", (user_id,))
                 issues = c.fetchall()
+                issues_with_messages = []
+                for issue in issues:
+                    issue_id = issue[0]
+                    messages = get_ticket_messages(c, issue_id)
+                    issue_list = list(issue)  # Convert the tuple to a list
+                    issue_list.append(messages)
+                    issues_with_messages.append(issue_list)
 
                 types = [
                     {'value': 'eelab', 'label': 'EE Lab'},
                     {'value': 'itl', 'label': 'ITL'},
                     {'value': 'its', 'label': 'ITS'}
                 ]
-                return render_template('issues.html', username=session['username'], types=types, issues=issues)
+                return render_template('issues.html', username=session['username'], types=types, issues=issues_with_messages)
             except Exception as e:
                 # Handle errors
                 conn.rollback()
                 return render_template('error.html', message=e)
+
+        elif role == 'admin':
+            if session['username'] == 'itladmin':
+                department = 'itl'
+            elif session['username'] == 'eeadmin':
+                department = 'eelab'
+            elif session['username'] == 'itsadmin':
+                department = 'its'
+            else:
+                return render_template('error.html', message="Department not found")
+
+            try:
+                c.execute("SELECT users.username, tickets.id, tickets.type, tickets.title, tickets.description, tickets.status, tickets.created_at FROM tickets INNER JOIN users ON users.id = user_id WHERE tickets.type = ?", (department,))
+                issues = c.fetchall()
+                issues_with_messages = []
+                for issue in issues:
+                    issue_id = issue[1]
+                    messages = get_ticket_messages(c, issue_id)
+                    issue_list = list(issue)  # Convert the tuple to a list
+                    issue_list.append(messages)
+                    issues_with_messages.append(issue_list)
+
+                conn.close()
+                return render_template('issues.html', username=session['username'], issues=issues_with_messages)
+            except Exception as e:
+                # Handle errors
+                conn.rollback()
+                return render_template('error.html', message=e)
+
     return redirect(url_for('login'))
 
 # Route for handling updating the issues
@@ -195,20 +218,44 @@ def issues():
 def update_issue():
     if 'username' in session and session['role'] == 'admin':
         issue_id = request.form['issue_id']
-        response = request.form['response']
         status = request.form['status']
+
+        print("Updating issue {} with status {}".format(issue_id, status))  # Debug print
 
         conn = sqlite3.connect('system.db')
         c = conn.cursor()
 
         try:
-            c.execute("UPDATE tickets SET response = ?, status = ? WHERE id = ?", (response, status, issue_id))
+            c.execute("UPDATE tickets SET status = ? WHERE id = ?", (status, issue_id))
+            conn.commit()
+            print("Updated status successfully")  # Debug print
+        except Exception as e:
+            conn.rollback()
+            print("Error updating status:", e)  # Debug print
+            return render_template('error.html', message=e)
+
+        return redirect(url_for('issues'))
+    # if not signed in go to the login screen
+    return redirect(url_for('login'))
+
+@app.route('/issues/message', methods=['POST'])
+def submit_message():
+    if 'username' in session:
+        ticket_id = request.form['ticket_id']
+        user_id = session['user_id']
+        message = request.form['message']
+
+        conn = sqlite3.connect('system.db')
+        c = conn.cursor()
+
+        try:
+            c.execute("INSERT INTO ticket_messages (ticket_id, user_id, message) VALUES (?, ?, ?)", (ticket_id, user_id, message))
             conn.commit()
             return redirect(url_for('issues'))
         except Exception as e:
             conn.rollback()
             return render_template('error.html', message=e)
-    # if not signed in, go to the login screen
+
     return redirect(url_for('login'))
 
 
