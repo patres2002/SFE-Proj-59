@@ -1,51 +1,52 @@
 {% extends 'base.html' %}
 
 {% block head %}
-	<title>Extenuating Circumstance Form</title>
-	<link rel="stylesheet" href="{{ url_for('static', filename='css/home.css') }}">
-	<link rel="stylesheet" href="{{ url_for('static', filename='css/ec.css') }}">
+  <title>Extenuating Circumstance Form</title>
+  <link rel="stylesheet" href="{{ url_for('static', filename='css/home.css') }}">
+  <link rel="stylesheet" href="{{ url_for('static', filename='css/ec.css') }}">
 {% endblock %}
 
 {% block body %}
 {% if session['role'] == 'student' %}
-	<h1>Extenuating Circumstance Form</h1>
-	<form method="POST" action="{{ url_for('ec') }}" enctype = "multipart/form-data">
+  <h1>Extenuating Circumstance Form</h1>
+  <form method="POST" action="{{ url_for('ec') }}" enctype = "multipart/form-data">
     <div class="wrapper">
-      <input type="radio" name="claim_type" id="option-1" checked onchange="toggleRequired()">
-      <input type="radio" name="claim_type" id="option-2" onchange="toggleRequired()">
-        <label for="option-1" class="option option-1">
-          <div class="dot"></div>
-           <span>Standard</span>
-           </label>
+        <input type="radio" name="claim_type" id="option-1" checked onchange="toggleRequired()">
+        <input type="radio" name="claim_type" id="option-2" onchange="toggleRequired()">
+            <label for="option-1" class="option option-1">
+            <div class="dot"></div>
+                <span>Standard</span>
+            </label>
         <label for="option-2" class="option option-2">
           <div class="dot"></div>
            <span>Self Certified</span>
         </label>
      </div>
-		<fieldset>
-			<legend>Course Information</legend>
-			<label for="course_name" class="required">Course Name:</label>
-			<input type="text" id="course_name" name="course_name" required>
+    <fieldset>
+      <legend>Course Information</legend>
+      <label for="course_name" class="required">Course Name:</label>
+      <input type="text" id="course_name" name="course_name" required>
 
-			<label for="instructor" class="required">Course Instructor:</label>
-			<input type="text" id="instructor" name="instructor" required>
-		</fieldset>
+      <label for="instructor" class="required">Course Instructor:</label>
+      <input type="text" id="instructor" name="instructor" required>
+    </fieldset>
 
-		<fieldset>
-			<legend>Description of Circumstance</legend>
-			<label for="description" class="required">Please provide a detailed explanation of your extenuating circumstance. Include any relevant dates and supporting documentation.</label>
-			<textarea id="description" name="description" required></textarea>
-		</fieldset>
+    <fieldset>
+      <legend>Description of Circumstance</legend>
+      <label for="description" class="required">Please provide a detailed explanation of your extenuating circumstance. Include any relevant dates and supporting documentation.</label>
+      <textarea id="description" name="description" required></textarea>
+    </fieldset>
     <fieldset>
       <legend>Supporting Documentation</legend>
       <label for="evidence" id="evidenceLabel" class="required">Upload any relevant files as evidence:</label>
       <input type="file" id="evidence" name="evidence" accept=".pdf,.doc,.docx,.jpg,.jpeg,.png" required>
     </fieldset>
 
-		<input type="submit" value="Submit">
-	</form>
+    <input type="submit" value="Submit">
+  </form>
   <script>
   function toggleRequired() {
+    // toggle whether or not a file upload is required based on the type of EC claim
     if (document.getElementById('option-1').checked) {
       document.getElementById('evidence').required = true;
       document.getElementById('evidenceLabel').classList.add('required');
@@ -55,7 +56,7 @@
     }
   }
   </script>
-{% elif session['role'] == 'admin' %} {% if ecs|default %}
+{% elif session['role'] == 'admin' or session['role'] == 'module_organiser' %} {% if ecs|default %}
 <h1>ECs</h1>
 <table>
   <thead>
@@ -67,29 +68,90 @@
       <th>Status</th>
       <th>Created</th>
       <th>Evidence</th>
+      {% if session['role'] == 'admin' %}
+      <th>Delegated To</th>
+      {% endif %}
     </tr>
   </thead>
   <tbody>
     {% for claim in ecs %}
     <tr>
-      <td>{{ claim[0] }}</td>
-      <td>{{ claim[1] }}</td>
-      <td>{{ claim[2] }}</td>
-      <td>{{ claim[3] }}</td>
-      <td>{{ claim[4] }}</td>
-      <td>{{ claim[5] }}</td>
-      <td>
-        {% if claim[6] %}
-        <a href="{{ url_for('static', filename='uploads/' + claim[6]) }}" target="_blank">View Evidence</a>
-        {% else %}
-        No Evidence
+        <td>{{ claim[1] }}</td>
+        <td>{{ claim[2] }}</td>
+        <td>{{ claim[3] }}</td>
+        <td>{{ claim[4] }}</td>
+        <td>{{ claim[5] }}</td>
+        <td>{{ claim[6] }}</td>
+        <td>
+            {% if claim[7] %}
+            <a href="{{ url_for('static', filename='uploads/' + claim[6]) }}" target="_blank">View Evidence</a>
+            {% else %}
+            No Evidence
+            {% endif %}
+        </td>
+        {% if session['role'] == 'admin' %}
+        <td>
+            <select name="delegated_to" id="delegated_to_{{ claim[8] }}" onchange="delegateClaim('{{ claim[0] }}', this.id)">
+              <option value="">Select Organiser</option>
+              {% for organiser in module_organisers %}
+                <option value="{{ organiser[0] }}" {% if claim[8] == organiser[0] %}selected{% endif %}>{{ organiser[1] }}</option>
+              {% endfor %}
+            </select>
+        </td>
         {% endif %}
-      </td>
+        {% if session['role'] == 'module_organiser' %}
+        <td>
+            {{ claim[0] }}
+            <button onclick="updateClaimStatus('{{ claim[0] }}', 'approved')">Approve</button>
+            <button onclick="updateClaimStatus('{{ claim[0] }}', 'denied')">Deny</button>
+        </td>
+        {% endif %}
     </tr>
     {% endfor %}
   </tbody>
 </table>
+<script>
+function delegateClaim(claimId, selectElementId) {
+  const selectElement = document.getElementById(selectElementId);
+  const selectedOrganiser = selectElement.value;
+
+  // Send the delegation request to the server
+  fetch('/delegate_claim', {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ claim_id: claimId, delegated_to: selectedOrganiser }),
+  })
+    .then((response) => {
+      if (response.ok) {
+        alert('Claim delegated successfully');
+      } else {
+        alert('Error delegating claim');
+      }
+    })
+    .catch((error) => {
+      console.error('Error:', error);
+    });
+}
+function updateClaimStatus(claimId, status) {
+  // Send the status update request to the server
+  fetch('/update_claim_status', {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ claim_id: claimId, status: status }),
+  })
+    .then((response) => {
+      if (response.ok) {
+        alert('Claim status updated successfully');
+        location.reload();
+      } else {
+        alert('Error updating claim status');
+      }
+    })
+    .catch((error) => {
+      console.error('Error:', error);
+    });
+}
+</script>
 {% else %} {% endif %} {% else %}
 <p>You are logged in as {{ username }}</p>
-<p>You don't have privileges to access this page.</p>
 {% endif %} {% endblock %}

@@ -1,5 +1,5 @@
 import os
-from flask import Flask, render_template, request, redirect, url_for, session
+from flask import Flask, render_template, request, redirect, url_for, session, jsonify
 import sqlite3
 
 app = Flask(__name__)
@@ -47,7 +47,8 @@ c.execute('''CREATE TABLE IF NOT EXISTS ecs (
     description TEXT,
     status TEXT NOT NULL,
     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-    evidence TEXT)''')
+    evidence TEXT,
+    delegated_to INTEGER)''')
 
 # Save the changes and close the database
 conn.commit()
@@ -182,14 +183,18 @@ def ec():
             # Save the uploaded file
             uploaded_file = request.files.get('evidence')
             if uploaded_file:
-                print('here')
+                print('uploading')
                 filename = f"{user_id}_{uploaded_file.filename}"
                 file_path = os.path.join('static', 'uploads', filename)
                 uploaded_file.save(file_path)
 
             try:
                 # Send the data to the database
+                print("about to insert")
+                conn = sqlite3.connect('system.db')
+                c = conn.cursor()
                 c.execute("INSERT INTO ecs (user_id, course_name, instructor, description, status, evidence) VALUES (?, ?, ?, ?, ?, ?)", (user_id, course_name, instructor, description, status, filename))
+                print("inserting data")
                 conn.commit()
                 message = "Your EC has been submitted."
                 return render_template('message.html', message=message)
@@ -199,8 +204,32 @@ def ec():
         # if ecadmin return all the ec in the database
         elif session['username'] == 'ecadmin':
             try:
-                c.execute("SELECT users.username, ecs.course_name, ecs.instructor, ecs.description, ecs.status, ecs.created_at, ecs.evidence FROM ecs INNER JOIN users ON users.id = user_id")
+                c.execute("SELECT ecs.id, users.username, ecs.course_name, ecs.instructor, ecs.description, ecs.status, ecs.created_at, ecs.evidence, ecs.delegated_to FROM ecs INNER JOIN users ON users.id = user_id")
                 ecs = c.fetchall()
+
+                # Get the list of module organizers
+                # print("About to get module organisers")
+                c.execute("SELECT id, username FROM users WHERE role = 'module_organiser'")
+                # print("here")
+                module_organisers = c.fetchall()
+                # print(module_organisers)
+
+                conn.close()
+                # print("closed connection")
+                # print(ecs)
+                return render_template('ec.html', username=session['username'], ecs=ecs, module_organisers=module_organisers)
+            except Exception as e:
+                # Handle errors
+                conn.rollback()
+                return render_template('error.html', message=e)
+        elif session['role'] == 'module_organiser':
+            try:
+                print("here")
+                module_organiser_id = session['user_id']
+                c.execute("SELECT ecs.id, users.username, ecs.course_name, ecs.instructor, ecs.description, ecs.status, ecs.created_at, ecs.evidence FROM ecs INNER JOIN users ON users.id = user_id WHERE ecs.delegated_to = ?", (module_organiser_id,))
+                ecs = c.fetchall()
+                # print(session['user_id'])
+                # print(ecs)
                 conn.close()
                 return render_template('ec.html', username=session['username'], ecs=ecs)
             except Exception as e:
@@ -211,6 +240,34 @@ def ec():
             return render_template('ec.html', username=session['username'])
     return redirect(url_for('login'))
 
+@app.route('/delegate_claim', methods=['POST'])
+def delegate_claim():
+    if 'username' in session and session['role'] == 'admin':
+        # Parse the request data
+        data = request.get_json()
+        claim_id = data['claim_id']
+        delegated_to = data['delegated_to']
+
+        print(f"Updating claim_id: {claim_id} with delegated_to: {delegated_to}")
+
+        # Update the delegated_to field in the database
+        conn = sqlite3.connect('system.db')
+        c = conn.cursor()
+
+        try:
+            c.execute("UPDATE ecs SET delegated_to = ? WHERE id = ?", (delegated_to, claim_id))
+            conn.commit()
+            print("Delegation updated successfully in the database")
+            conn.close()
+            return jsonify(success=True)
+        except Exception as e:
+            conn.rollback()
+            conn.close()
+            print(f"Error during updating delegation: {str(e)}")
+            return jsonify(success=False, error=str(e))
+    else:
+        return jsonify(success=False, error="Unauthorized")
+
 # Logout page
 @app.route('/logout')
 def logout():
@@ -219,6 +276,31 @@ def logout():
     session.pop('user_id', None)
     session.pop('role', None)
     return redirect(url_for('login'))
+
+@app.route('/update_claim_status', methods=['POST'])
+def update_claim_status():
+    if 'username' in session and session['role'] == 'module_organiser':
+        # Parse the request data
+        data = request.get_json()
+        print("Received data:", data)  # Add a print statement here
+        claim_id = data['claim_id']
+        status = data['status']
+
+        # Update the status field in the database
+        conn = sqlite3.connect('system.db')
+        c = conn.cursor()
+
+        try:
+            c.execute("UPDATE ecs SET status = ? WHERE id = ?", (status, claim_id))
+            conn.commit()
+            conn.close()
+            return jsonify(success=True)
+        except Exception as e:
+            conn.rollback()
+            conn.close()
+            return jsonify(success=False, error=str(e))
+    else:
+        return jsonify(success=False, error="Unauthorized")
 
 if __name__ == '__main__':
     app.debug = True
