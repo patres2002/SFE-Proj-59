@@ -1,3 +1,4 @@
+import datetime
 import os
 from flask import Flask, render_template, request, redirect, url_for, session, jsonify
 import sqlite3
@@ -25,6 +26,8 @@ if row_count == 0:
     c.execute("INSERT INTO users (username, password, role) VALUES ('ecadmin', 'ec', 'admin')")
     c.execute("INSERT INTO users (username, password, role) VALUES ('itsadmin', 'itsadmin', 'admin')")
     c.execute("INSERT INTO users (username, password, role) VALUES ('moduleorganiser', 'module', 'module_organiser')")
+    c.execute("INSERT INTO users (username, password, role) VALUES ('moduleorganiser2', 'module', 'module_organiser')")
+    c.execute("INSERT INTO users (username, password, role) VALUES ('student2', 'student', 'student')")
     conn.commit()
 
 # Create the tickets table for issues
@@ -48,6 +51,7 @@ c.execute('''CREATE TABLE IF NOT EXISTS ecs (
     status TEXT NOT NULL,
     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
     evidence TEXT,
+    claim_type TEXT NOT NULL,
     delegated_to INTEGER)''')
 
 # Save the changes and close the database
@@ -179,6 +183,16 @@ def ec():
             user_id = session['user_id']
             status = 'pending'
             filename = None
+            claim_type = request.form['claim_type']
+
+            # Check if the user has reached the limit for self-certified claims
+            if request.form['claim_type'] == 'option-2':
+                current_year = datetime.datetime.now().year
+                c.execute("SELECT COUNT(*) FROM ecs WHERE user_id = ? AND strftime('%Y', created_at) = ? AND claim_type = 'self_certified'", (user_id, current_year))
+                count = c.fetchone()[0]
+                if count >= 3:
+                    message = "You have reached the limit of 3 self-certified ECs per year."
+                    return render_template('message.html', message=message)
 
             # Save the uploaded file
             uploaded_file = request.files.get('evidence')
@@ -193,7 +207,7 @@ def ec():
                 print("about to insert")
                 conn = sqlite3.connect('system.db')
                 c = conn.cursor()
-                c.execute("INSERT INTO ecs (user_id, course_name, instructor, description, status, evidence) VALUES (?, ?, ?, ?, ?, ?)", (user_id, course_name, instructor, description, status, filename))
+                c.execute("INSERT INTO ecs (user_id, course_name, instructor, description, status, evidence, claim_type) VALUES (?, ?, ?, ?, ?, ?, ?)", (user_id, course_name, instructor, description, status, filename, claim_type))
                 print("inserting data")
                 conn.commit()
                 message = "Your EC has been submitted."
@@ -201,10 +215,24 @@ def ec():
             except Exception as e:
                 conn.rollback()
                 return render_template('error.html', message=e)
+
+        # Fetch submitted ECs for students
+        if session['role'] == 'student':
+            try:
+                user_id = session['user_id']
+                c.execute("SELECT * FROM ecs WHERE user_id = ?", (user_id,))
+                submitted_ecs = c.fetchall()
+                conn.close()
+                return render_template('ec.html', username=session['username'], submitted_ecs=submitted_ecs)
+            except Exception as e:
+                # Handle errors
+                conn.rollback()
+                return render_template('error.html', message=e)
+
         # if ecadmin return all the ec in the database
         elif session['username'] == 'ecadmin':
             try:
-                c.execute("SELECT ecs.id, users.username, ecs.course_name, ecs.instructor, ecs.description, ecs.status, ecs.created_at, ecs.evidence, ecs.delegated_to FROM ecs INNER JOIN users ON users.id = user_id")
+                c.execute("SELECT ecs.id, users.username, ecs.course_name, ecs.instructor, ecs.description, ecs.status, ecs.created_at, ecs.evidence, ecs.claim_type, ecs.delegated_to FROM ecs INNER JOIN users ON users.id = user_id")
                 ecs = c.fetchall()
 
                 # Get the list of module organizers
@@ -224,9 +252,9 @@ def ec():
                 return render_template('error.html', message=e)
         elif session['role'] == 'module_organiser':
             try:
-                print("here")
+                # print("here")
                 module_organiser_id = session['user_id']
-                c.execute("SELECT ecs.id, users.username, ecs.course_name, ecs.instructor, ecs.description, ecs.status, ecs.created_at, ecs.evidence FROM ecs INNER JOIN users ON users.id = user_id WHERE ecs.delegated_to = ?", (module_organiser_id,))
+                c.execute("SELECT ecs.id, users.username, ecs.course_name, ecs.instructor, ecs.description, ecs.status, ecs.created_at, ecs.evidence, ecs.claim_type FROM ecs INNER JOIN users ON users.id = user_id WHERE ecs.delegated_to = ? AND ecs.status == 'pending'", (module_organiser_id,))
                 ecs = c.fetchall()
                 # print(session['user_id'])
                 # print(ecs)

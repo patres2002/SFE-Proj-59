@@ -11,8 +11,8 @@
   <h1>Extenuating Circumstance Form</h1>
   <form method="POST" action="{{ url_for('ec') }}" enctype = "multipart/form-data">
     <div class="wrapper">
-        <input type="radio" name="claim_type" id="option-1" checked onchange="toggleRequired()">
-        <input type="radio" name="claim_type" id="option-2" onchange="toggleRequired()">
+        <input type="radio" name="claim_type" id="option-1" value="standard" checked onchange="toggleRequired()">
+        <input type="radio" name="claim_type" id="option-2" value="self_certified" onchange="toggleRequired()">
             <label for="option-1" class="option option-1">
             <div class="dot"></div>
                 <span>Standard</span>
@@ -44,6 +44,42 @@
 
     <input type="submit" value="Submit">
   </form>
+
+{% if submitted_ecs|default %}
+<h2>Your Submitted ECs</h2>
+<table>
+  <thead>
+    <tr>
+      <th>Course Name</th>
+      <th>Instructor</th>
+      <th>Description</th>
+      <th>Status</th>
+      <th>Created</th>
+      <th>Evidence</th>
+      <th>Type</th>
+    </tr>
+  </thead>
+  <tbody>
+    {% for claim in submitted_ecs %}
+    <tr>
+        <td>{{ claim[2] }}</td>
+        <td>{{ claim[3] }}</td>
+        <td>{{ claim[4] }}</td>
+        <td>{{ claim[5] }}</td>
+        <td>{{ claim[6] }}</td>
+        <td>
+            {% if claim[7] %}
+            <a href="{{ url_for('static', filename='uploads/' + claim[7]) }}" target="_blank">View Evidence</a></td>
+            {% else %}
+            No Evidence
+            {% endif %}
+        </td>
+        <td>{{ claim[8] }}</td>
+    </tr>
+    {% endfor %}
+  </tbody>
+</table>
+{% endif %}
   <script>
   function toggleRequired() {
     // toggle whether or not a file upload is required based on the type of EC claim
@@ -84,24 +120,23 @@
         <td>{{ claim[6] }}</td>
         <td>
             {% if claim[7] %}
-            <a href="{{ url_for('static', filename='uploads/' + claim[6]) }}" target="_blank">View Evidence</a>
+            <a href="{{ url_for('static', filename='uploads/' + claim[7]) }}" target="_blank">View Evidence</a>
             {% else %}
             No Evidence
             {% endif %}
         </td>
         {% if session['role'] == 'admin' %}
         <td>
-            <select name="delegated_to" id="delegated_to_{{ claim[8] }}" onchange="delegateClaim('{{ claim[0] }}', this.id)">
+            <select name="delegated_to" id="delegated_to_{{ claim[9] }}" onchange="delegateClaim('{{ claim[0] }}', this.id)">
               <option value="">Select Organiser</option>
               {% for organiser in module_organisers %}
-                <option value="{{ organiser[0] }}" {% if claim[8] == organiser[0] %}selected{% endif %}>{{ organiser[1] }}</option>
+                <option value="{{ organiser[0] }}" {% if claim[9] == organiser[0] %}selected{% endif %}>{{ organiser[1] }}</option>
               {% endfor %}
             </select>
         </td>
         {% endif %}
         {% if session['role'] == 'module_organiser' %}
         <td>
-            {{ claim[0] }}
             <button onclick="updateClaimStatus('{{ claim[0] }}', 'approved')">Approve</button>
             <button onclick="updateClaimStatus('{{ claim[0] }}', 'denied')">Deny</button>
         </td>
