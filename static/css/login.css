@@ -7,12 +7,12 @@ html {
 }
 
 .bg {
-  background-image: url('/images/190332.jpg');
+  background-image: url('/static/images/190332.jpg');
   position: absolute;
   left: 0;
   top: 0;
-  width: 100%;
-  height: 100%;
+  width: 600px;
+  height: 600px;
   background-size: cover;
   filter: blur(5px);
 }

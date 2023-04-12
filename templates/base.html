@@ -1,11 +1,14 @@
 <!DOCTYPE html>
 <html lang="en">
+  
   <head>
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/main.css') }}">
     <meta charset="UTF-8" />
     <meta http-equiv="X-UA-Compatible" content="IE=edge" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     {% block head %}{% endblock %}
   </head>
+
   <body>
     <nav class="navtop">
       <!-- <img src="{{url_for('static', filename='190335.png')}}"> -->
@@ -15,6 +18,7 @@
         <a href="{{ url_for('logout') }}">Logout</a>
         <a href="{{ url_for('ec') }}">Extenuating Circumstance</a>
         <a href="{{ url_for('issues') }}">Issues</a>
+        <a>You are logged in as {{ username }}</a>
       </div>
     </nav>
     {% block body %}{% endblock %}
