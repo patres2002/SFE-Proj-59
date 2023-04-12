@@ -118,7 +118,7 @@ def home() -> str:
         if role == 'admin':
             return render_template('admin.html', username=session['username'])
         elif role == 'module_organiser':
-            return render_template('moduleo.html', username=session['username'])
+            return render_template('home.html', username=session['username'])
         elif role == 'student':
             return render_template('home.html', username=session['username'])
         else:
