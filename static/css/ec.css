@@ -69,6 +69,7 @@ input[type="submit"]:hover {
 	width: 35vw;
 	align-items: center;
 	justify-content: space-evenly;
+	margin-bottom: 30px;
 	/* border-radius: 5px;
 	padding: 20px 15px; */
 	/* box-shadow: 5px 5px 30px rgba(0,0,0,0.2); */
