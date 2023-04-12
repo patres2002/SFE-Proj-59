@@ -25,3 +25,15 @@ c = conn.cursor()
     if 'username' in session:
         return render_template('ec.html', username = session['username'])
     return redirect(url_for('login'))
+
+# homepage base
+
+<title>Home - StuCare</title>
+<link
+  rel="stylesheet"
+  href="{{ url_for('static', filename='css/home.css') }}"
+/>
+{% endblock %} {% block body %}
+<h1>This is home</h1>
+<p>You are logged in as {{ username }}</p>
+{% endblock %}

@@ -7,6 +7,8 @@
 {% endblock %}
 
 {% block body %}
+<p>You are logged in as {{ username }}</p>
+
 {% if session['role'] == 'student' %}
   <h1>Extenuating Circumstance Form</h1>
   <form method="POST" action="{{ url_for('ec') }}" enctype = "multipart/form-data">

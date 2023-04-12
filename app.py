@@ -317,7 +317,7 @@ def ec():
                 c.execute("SELECT * FROM ecs WHERE user_id = ?", (user_id,))
                 submitted_ecs = c.fetchall()
                 conn.close()
-                return render_template('ec.html', username=session['username'], submitted_ecs=submitted_ecs)
+                return render_template('ec.html', username=session['username'], submitted_ecs=submitted_ecs) #AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA
             except Exception as e:
                 # Handle errors
                 conn.rollback()
@@ -339,7 +339,7 @@ def ec():
                 conn.close()
                 # print("closed connection")
                 # print(ecs)
-                return render_template('ec.html', username=session['username'], ecs=ecs, module_organisers=module_organisers)
+                return render_template('ec.html', username=session['username'], ecs=ecs, module_organisers=module_organisers) #ECAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA
             except Exception as e:
                 # Handle errors
                 conn.rollback()

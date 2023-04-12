@@ -1,10 +1,151 @@
 {% extends 'base.html' %}
 
 {% block head %}
-<link rel="stylesheet" href="{{ url_for('static', filename='css/home.css') }}">
-<title>Home - StuCare</title>
+  <title>Extenuating Circumstance Form</title>
+  <link rel="stylesheet" href="{{ url_for('static', filename='css/home.css') }}">
+  <link rel="stylesheet" href="{{ url_for('static', filename='css/ec.css') }}">
 {% endblock %}
 
 {% block body %}
 <p>You are logged in as {{ username }}</p>
-{% endblock %}
+
+
+{% if session['role'] == 'student' %}
+  
+
+
+{% if submitted_ecs|default %}
+<hr>
+<h2>Your Submitted ECs</h2>
+<table>
+  <thead>
+    <tr>
+      <th>Course Name</th>
+      <th>Instructor</th>
+      <th>Description</th>
+      <th>Status</th>
+      <th>Created</th>
+      <th>Evidence</th>
+      <th>Type</th>
+    </tr>
+  </thead>
+  <tbody>
+    {% for claim in submitted_ecs %}
+    <tr>
+        <td>{{ claim[2] }}</td>
+        <td>{{ claim[3] }}</td>
+        <td>{{ claim[4] }}</td>
+        <td>{{ claim[5] }}</td>
+        <td>{{ claim[6] }}</td>
+        <td>
+            {% if claim[7] %}
+            <a href="{{ url_for('static', filename='uploads/' + claim[7]) }}" target="_blank">View Evidence</a></td>
+            {% else %}
+            No Evidence
+            {% endif %}
+        </td>
+        <td>{{ claim[8] }}</td>
+    </tr>
+    {% endfor %}
+  </tbody>
+</table>
+{% endif %}
+ 
+{% elif session['role'] == 'admin' or session['role'] == 'module_organiser' %} {% if ecs|default %}
+<h1>ECs</h1>
+<table>
+  <thead>
+    <tr>
+      <th>Name</th>
+      <th>Course Name</th>
+      <th>Instructor</th>
+      <th>Description</th>
+      <th>Status</th>
+      <th>Created</th>
+      <th>Evidence</th>
+      {% if session['role'] == 'admin' %}
+      <th>Delegated To</th>
+      {% endif %}
+    </tr>
+  </thead>
+  <tbody>
+    {% for claim in ecs %}
+    <tr>
+        <td>{{ claim[1] }}</td>
+        <td>{{ claim[2] }}</td>
+        <td>{{ claim[3] }}</td>
+        <td>{{ claim[4] }}</td>
+        <td>{{ claim[5] }}</td>
+        <td>{{ claim[6] }}</td>
+        <td>
+            {% if claim[7] %}
+            <a href="{{ url_for('static', filename='uploads/' + claim[7]) }}" target="_blank">View Evidence</a>
+            {% else %}
+            No Evidence
+            {% endif %}
+        </td>
+        {% if session['role'] == 'admin' %}
+        <td>
+            <select name="delegated_to" id="delegated_to_{{ claim[9] }}" onchange="delegateClaim('{{ claim[0] }}', this.id)">
+              <option value="">Select Organiser</option>
+              {% for organiser in module_organisers %}
+                <option value="{{ organiser[0] }}" {% if claim[9] == organiser[0] %}selected{% endif %}>{{ organiser[1] }}</option>
+              {% endfor %}
+            </select>
+        </td>
+        {% endif %}
+        {% if session['role'] == 'module_organiser' %}
+        <td>
+            <button onclick="updateClaimStatus('{{ claim[0] }}', 'approved')">Approve</button>
+            <button onclick="updateClaimStatus('{{ claim[0] }}', 'denied')">Deny</button>
+        </td>
+        {% endif %}
+    </tr>
+    {% endfor %}
+  </tbody>
+</table>
+<script>
+function delegateClaim(claimId, selectElementId) {
+  const selectElement = document.getElementById(selectElementId);
+  const selectedOrganiser = selectElement.value;
+
+  // Send the delegation request to the server
+  fetch('/delegate_claim', {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ claim_id: claimId, delegated_to: selectedOrganiser }),
+  })
+    .then((response) => {
+      if (response.ok) {
+        alert('Claim delegated successfully');
+      } else {
+        alert('Error delegating claim');
+      }
+    })
+    .catch((error) => {
+      console.error('Error:', error);
+    });
+}
+function updateClaimStatus(claimId, status) {
+  // Send the status update request to the server
+  fetch('/update_claim_status', {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ claim_id: claimId, status: status }),
+  })
+    .then((response) => {
+      if (response.ok) {
+        alert('Claim status updated successfully');
+        location.reload();
+      } else {
+        alert('Error updating claim status');
+      }
+    })
+    .catch((error) => {
+      console.error('Error:', error);
+    });
+}
+</script>
+{% else %} {% endif %} {% else %}
+<p>You are logged in as {{ username }}</p>
+{% endif %} {% endblock %}

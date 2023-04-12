@@ -1,7 +1,9 @@
 {% extends 'base.html' %} {% block head %}
 <link rel="stylesheet" href="{{ url_for('static', filename='css/home.css') }}"/>
+<link rel="stylesheet" href="{{ url_for('static', filename='css/issue.css') }}">
 <title>Issues - StuCare</title>
 {% endblock %} {% block body %}
+<p>You are logged in as {{ username }}</p>
 
 {% if session['role'] == 'student' %}
 
@@ -88,7 +90,11 @@
     <tbody>
         {% for issue in issues %}
         <tr>
-            <td>{{ issue }}</td>
+            <td>{{ issue[1] }}</td>
+            <td>{{ issue[2] }}</td>
+            <td>{{ issue[3] }}</td>
+            <td>{{ issue[4] }}</td>
+            <td>{{ issue[5] }}</td>
             <td>
             <!-- admins can reply to tickets and mark them as resolved -->
             <ul>
