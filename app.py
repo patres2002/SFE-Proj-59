@@ -191,7 +191,7 @@ def issues():
             elif session['username'] == 'itsadmin':
                 department = 'its'
             else:
-                return render_template('error.html', message="Department not found")
+                return render_template('error.html', message="Department not found! Access Denied.") # If you're not any of these users, you do not have access
 
             try:
                 c.execute("SELECT users.username, tickets.id, tickets.type, tickets.title, tickets.description, tickets.status, tickets.created_at FROM tickets INNER JOIN users ON users.id = user_id WHERE tickets.type = ?", (department,))
@@ -243,7 +243,7 @@ def submit_message():
     if 'username' in session:
         ticket_id = request.form['ticket_id']
         user_id = session['user_id']
-        message = request.form['message']
+        message = request.form['message'] # Adds message to ticket
 
         conn = sqlite3.connect('system.db')
         c = conn.cursor()
@@ -317,7 +317,7 @@ def ec():
                 c.execute("SELECT * FROM ecs WHERE user_id = ?", (user_id,))
                 submitted_ecs = c.fetchall()
                 conn.close()
-                return render_template('ec.html', username=session['username'], submitted_ecs=submitted_ecs) #AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA
+                return render_template('ec.html', username=session['username'], submitted_ecs=submitted_ecs) 
             except Exception as e:
                 # Handle errors
                 conn.rollback()
@@ -339,7 +339,7 @@ def ec():
                 conn.close()
                 # print("closed connection")
                 # print(ecs)
-                return render_template('ec.html', username=session['username'], ecs=ecs, module_organisers=module_organisers) #ECAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA
+                return render_template('ec.html', username=session['username'], ecs=ecs, module_organisers=module_organisers) 
             except Exception as e:
                 # Handle errors
                 conn.rollback()
