@@ -6,13 +6,20 @@ html {
   padding: 0px;
 }
 
+.container{
+  border:solid;
+  border-color:black;
+  text-align: center;
+  font-family: century 'Franklin Gothic Medium', 'Arial Narrow', Arial, sans-serif;
+  font-weight: solid;
+  
+}
 .bg {
-  background-image: url('/static/images/190332.jpg');
   position: absolute;
   left: 0;
   top: 0;
-  width: 600px;
-  height: 600px;
+  width: 50%;
+  height: 50%;
   background-size: cover;
   filter: blur(5px);
 }
