@@ -1,25 +1,39 @@
 body {
 	font-family: Arial, sans-serif;
+	margin: 0;
+	padding: 0;
+    background-color: #f5f5f5;
 }
 
 html {
 	box-sizing: border-box;
-	margin: 0;
-	padding: 0;
 }
 
-header, h1 {
+header, h1, h2 {
 	background-color: #2255aa;
 	color: #fff;
 	text-align: center;
+    padding: 10px 0;
+    margin-top: 0px;
 }
 
+h1 {
+    font-size: 2em;
+}
+
+h2 {
+	margin-top: 30px;
+    font-size: 1.5em;
+}
 
 form {
 	max-width: 1000px;
-	margin: 0 auto;
+	margin: 20px auto;
 	padding: 20px;
 	border: 0.5px solid #ccc;
+    background-color: #fff;
+    border-radius: 4px;
+    box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
 }
 
 fieldset {
@@ -33,6 +47,7 @@ legend {
 label {
 	display: block;
 	margin-bottom: 5px;
+    font-weight: bold;
 }
 
 input[type="text"],
@@ -143,4 +158,40 @@ input:required:focus {
 	border-color: red;
 	outline: none;
 	box-shadow: 0 0 5px rgba(255, 0, 0, 0.5);
+}
+
+table {
+	border-collapse: collapse;
+	width: 100%;
+}
+
+th, td {
+	text-align: left;
+	padding: 8px;
+	border-bottom: 1px solid #ddd;
+    font-size: 16px;
+}
+
+th {
+	background-color: #e5e5e5;
+	color: #555;
+    font-weight: bold;
+}
+
+tr:nth-child(even) {
+	background-color: #f8f8f8;
+}
+
+tr:hover {
+	background-color: #ddd;
+}
+
+textarea {
+	width: 100%;
+	height: 100px;
+	padding: 8px;
+	box-sizing: border-box;
+	border-radius: 5px;
+	border: 1px solid #ccc;
+    font-size: 16px;
 }

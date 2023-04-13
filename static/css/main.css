@@ -1,51 +1,33 @@
 .navtop {
-	background-color: #fff;
-	box-shadow: 0px 2px 5px rgba(0, 0, 0, 0.2);
-	display: flex;
-	justify-content: space-between;
-	align-items: center;
-	padding: 10px;
-  }
-  
-  .navtop h1 {
-	font-size: 24px;
-	margin: 0;
-	color: #333;
-  }
-  
-  .navtop a {
-	color: #333;
-	text-decoration: none;
-	margin-left: 20px;
-	font-weight: bold;
-	transition: all 0.3s ease;
-  }
-  
-  .navtop a:hover {
-	color: #f37272;
-  }
-  
-  .navtop a:last-child {
-	margin-right: 0;
-  }
-  
-  .navtop a:nth-last-child(2) {
-	margin-right: auto;
-  }
-  
-  .navtop a:nth-last-child(3) {
-	margin-right: auto;
-  }
-  
-  .navtop a:nth-last-child(4) {
-	margin-right: auto;
-  }
-  
-  .navtop a:nth-last-child(5) {
-	margin-right: auto;
-  }
-  
-  .navtop a:last-child {
-	margin-right: 0;
-  }
-  
+    background-color: #2255aa;
+    height: 70px;
+    width: 100%;
+    border: 0;
+    font-family: century 'Franklin Gothic Medium', 'Arial Narrow', Arial, sans-serif;
+}
+.navtop a {
+    color: white;
+	
+}
+
+.navtop a {
+    color: white;
+    text-decoration: none;
+    padding: 8px 12px;
+    border-radius: 4px;
+    transition: background-color 0.2s ease-in-out;
+}
+
+.navtop a:hover {
+    background-color: rgba(255, 255, 255, 0.1);
+}
+
+.navtop h1 {
+    color: white;
+    margin: 0;
+    font-size: 22px;
+    font-weight: bold;
+    letter-spacing: 1px;
+    text-shadow: 1px 1px 2px rgba(0, 0, 0, 0.2);
+}
+
