@@ -7,7 +7,27 @@
 {% endblock %}
 
 {% block body %}
-
+<div class="container">
+  <h2>EECS Server Status</h2>
+  <div class="server-status">
+      <h3><a href="https://qmplus.qmul.ac.uk/my/">Queen Mary Student Hub</a></h3>
+      <p class="status online">Online</p> 
+      <!-- Uncomment the line below and comment the line above if the website is offline -->
+      <!-- <p class="status offline">Offline</p> -->
+  </div>
+  <div class="server-status">
+      <h3><a href="https://www.qmul.ac.uk/">Queen Mary Website</a></h3>
+      <p class="status online">Online</p> 
+      <!-- Uncomment the line below and comment the line above if the website is offline -->
+      <!-- <p class="status offline">Offline</p> -->
+  </div>
+  <div class="server-status">
+      <h3><a href="https://mysis.qmul.ac.uk/urd/sits.urd/run/siw_lgn">My SIS</a></h3>
+      <p class="status online">Online</p>
+      <!-- Uncomment the line below and comment the line above if the website is offline -->
+      <!-- <p class="status offline">Offline</p> -->
+  </div>
+</div>
 
 {% if session['role'] == 'student' %}
   
